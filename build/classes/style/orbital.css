@@ -1,0 +1,14 @@
+.root {
+	-fx-font-family: serif;
+	-fx-font-size: 24;
+	-fx-background-color: #333;
+}
+
+.label {
+	-fx-text-fill: #FFF;
+	-fx-font-size: 24;
+}
+
+#rules {
+	-fx-font-size: 14;
+}
