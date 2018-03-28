@@ -1,11 +1,9 @@
 package Orbital4;
 
-import javafx.scene.paint.Color;
-
 /**
  * Game Score. Holds game score and contains a method to increment a player's
  * score, a method to reset both scores to zero and a toString method.
- * @author emulrooney
+ * @author Evan Mulrooney 000745477
  */
 public class GameScore { 
     
@@ -18,7 +16,7 @@ public class GameScore {
      * when a player wins a game. 
      * @param player 
      */
-    public void pointScored(int player) {
+    public static void pointScored(int player) {
         if (player == 1) {
             player1score++;
         } else {
@@ -30,7 +28,7 @@ public class GameScore {
      * Wipe Scores. Sets player 1 and player 2 scores to zero. Called when a new
      * game is started.
      */
-    public void wipeScores() {
+    public static void wipeScores() {
         player1score = 0;
         player2score = 0;
     }

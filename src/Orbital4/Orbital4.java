@@ -12,7 +12,6 @@ import javafx.scene.paint.Color;
 import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import static javafx.application.Application.launch;
-import static javafx.application.Application.launch;
 
 /**
  * Main class for application.
@@ -28,30 +27,14 @@ import static javafx.application.Application.launch;
  * the model come from input from GameButtons or regular GUI buttons. If a new 
  * model is needed (ie. the user starts a new game), this class calls the model's
  * constructor but all logic is handled in the board model class. 
+ * 
+ * March 22nd 2018
  *
  * @author Evan Mulrooney 000745477
  */
 public class Orbital4 extends Application {
-
-    /* VIEW RELATED CONSTANTS */
- /* Offset from top-left of window */
-    private final static int BOARD_OFFSET = 60;
-    /* Size for pieces */
-    private final static int PIECE_SIZE = 48;
-    /* Size of buttons */
-    private final static int BUTTON_SIZE = PIECE_SIZE / 2;
-
-    /* Colors for board tiles */
-    private final static Color BOARD_COLOR_1 = Color.LIGHTGRAY;
-    private final static Color BOARD_COLOR_2 = Color.DARKGRAY;
-
-    /* Colors for players */
-    private final static Color P1_COLOR = Color.DARKRED;
-    private final static Color P2_COLOR = Color.NAVY;
-
-    /* Piece outlines */
-    private final static Color BORDER_SHADING = new Color(0, 0, 0, 0.25);
-
+ 
+    
     /* ASSOCIATONS */
     /* Buttons */
     private GameButton[][] gameButtons;
@@ -87,10 +70,15 @@ public class Orbital4 extends Application {
 
         //Build the main components
         board = new Board();
+        
+        //Set some static variables so board pieces display properly
+        Piece.setBoardOffset(60);
+        Piece.setPieceSize(48);
+                
         scores = new GameScore();
-        board.setScores(scores);
 
         /* GUI - TEXT */
+                
         //Set the title
         Label gameTitle = new Label("O R B I T A L 4\nby Evan Mulrooney");
         gameTitle.setLayoutX(555);
@@ -101,11 +89,13 @@ public class Orbital4 extends Application {
         gameRulesTitle.setLayoutY(110);
 
         //multiple lines for readability
-        Label gameRules = new Label("1.) Players take turns dropping\npieces from any direction.\n\n"
+        Label gameRules = new Label("1.) Players take turns dropping pieces from any direction.\n\n"
                 + "2.) Pieces travel in a straight line.\n\n"
-                + "3.) Players want to get 4 pieces in\na row in any direction.\n\n"
-                + "4.) Dropped pieces must connect\nto another piece above, below,\n"
-                + "to the left or to the right.");
+                + "3.) Players want to get 4 pieces in a row in any direction.\n\n"
+                + "4.) Dropped pieces must connect to another piece above, below to the left or to the right.");
+        
+        gameRules.setPrefWidth(240);
+        gameRules.setWrapText(true);
         gameRules.setLayoutX(555);
         gameRules.setLayoutY(140);
         gameRules.setId("rules");
@@ -143,12 +133,19 @@ public class Orbital4 extends Application {
         quitGameButton.setMinHeight(50);
         quitGameButton.setLayoutY(540);
         quitGameButton.setOnAction(this::guiButtonClick);
+        
+        //Building canvas and adding style elements
+        gc = canvas.getGraphicsContext2D();
+        gc.setFill(Color.DARKSLATEGRAY);
+        gc.fillRect(0, 0, 552, 800);
+        
+        scene.getStylesheets().add("/style/orbital.css");
 
         //Generate all game buttons and make sure they know where to add pieces
-        gameButtons = generateButtons();
+        gameButtons = generateButtons(gc);
         //Setting static fields, we have to have at least one button
-        gameButtons[0][0].setGameReference(this);
-        gameButtons[0][0].setBoard(board);
+        GameButton.setGameReference(this);
+        GameButton.setBoard(board);
 
         //Add all the buttons together.
         uiButtons.getChildren().addAll(newGameButton, wipeScoresButton, quitGameButton);
@@ -162,14 +159,8 @@ public class Orbital4 extends Application {
         root.getChildren().addAll(gameButtons[2]);
         root.getChildren().addAll(gameButtons[3]);
 
-        //Building canvas and adding style elements
-        gc = canvas.getGraphicsContext2D();
-        gc.setFill(Color.DARKSLATEGRAY);
-        gc.fillRect(0, 0, 552, 800);
-        scene.getStylesheets().add("/style/orbital.css");
-
         //Draw the game board
-        drawBoard(gc);
+        board.draw(gc);
 
         //Showing the stage
         stage.show();
@@ -193,87 +184,6 @@ public class Orbital4 extends Application {
         System.exit(0);
     }
 
-    /**
-     * Draws a new board and neutral centre piece.
-     * Loops through every space on grid and creates a grid of alternating
-     * colours. Draws the neutral piece found at the centre of the board.
-     * @param gc Graphics Context to draw on
-     */
-    private void drawBoard(GraphicsContext gc) {
-
-        //Simplifying for readability
-        int w = board.getWidth();
-        int h = board.getHeight();
-        
-        //Loop through and draw each space
-        for (int x = 0; x < w; x++) {
-            for (int y = 0; y < h; y++) {
-
-                if ((x + y) % 2 == 0) {
-                    gc.setFill(BOARD_COLOR_1);
-                } else {
-                    gc.setFill(BOARD_COLOR_2);
-                }
-
-                gc.fillRect(BOARD_OFFSET + (x * PIECE_SIZE), BOARD_OFFSET + (y * PIECE_SIZE), PIECE_SIZE, PIECE_SIZE);
-            }
-        }
-
-        //Make sure centre piece is drawn, otherwise players don't know where
-        //to drop pieces.
-        drawPiece(w / 2, h / 2);
-
-    }
-
-    /**
-     * Draws a piece at given x y.
-     * Sets the fill colour based on the piece found and then draws the piece.
-     * 
-     * Public to allow for GameButton to draw pieces.
-     *
-     * @param x Horizontal position
-     * @param y Vertical position
-     */
-    public void drawPiece(int x, int y) {
-
-        Piece piece = board.getPieceAt(x, y);
-
-        if (piece != null) {
-            switch (piece.getPieceOwner()) {
-                case 1:
-                    //1st player
-                    gc.setFill(P1_COLOR);
-                    break;
-                case 2:
-                    //2nd player
-                    gc.setFill(P2_COLOR);
-                    break;
-                case 8:
-                    //Neutral piece
-                    gc.setFill(Color.WHITE);
-                    break;
-                default:
-                    //This should never come up, but if there's a piece with a bad owner,
-                    //it should be visible.
-                    System.err.println("Piece with bad owner drawn at " + piece.getX() + ", " + piece.getY());
-                    gc.setFill(Color.LIMEGREEN);
-                    break;
-            }
-            
-            //Actually draw the oval
-            gc.fillOval(BOARD_OFFSET + piece.getX() * PIECE_SIZE, BOARD_OFFSET + piece.getY() * PIECE_SIZE, PIECE_SIZE, PIECE_SIZE);
-
-            //Decorative outline
-            gc.setStroke(BORDER_SHADING);
-            gc.setLineWidth(2);
-            gc.strokeOval(BOARD_OFFSET + piece.getX() * PIECE_SIZE, BOARD_OFFSET + piece.getY() * PIECE_SIZE,
-                    PIECE_SIZE, PIECE_SIZE);
-            
-        } else if (board.getGameWon()) {
-            //Prompt incase a player misses the text saying Game Over
-            System.out.println("Game won. Click new game to play again.");
-        }
-    }
 
     /**
      * General method called when one of the main GUI buttons is pressed.
@@ -290,9 +200,9 @@ public class Orbital4 extends Application {
         if (action.contains("New")) {
             //Make a new board and draw it
             board = new Board();
-            drawBoard(gc);
+            board.draw(gc);
             //Make sure buttons add pieces to the newly made board
-            gameButtons[0][0].setBoard(board);
+            GameButton.setBoard(board);
             gameWonDisplay.setText("");
         } else if (action.contains("Wipe")) {
             scores.wipeScores();
@@ -309,16 +219,22 @@ public class Orbital4 extends Application {
      * array of appropriate buttons.
      * @return 2D array of GameButtons
      */
-    private GameButton[][] generateButtons() {
+    private GameButton[][] generateButtons(GraphicsContext gc) {
         //init array
         GameButton[][] buttons = new GameButton[4][];
+        
+        int offset = Board.getBoardOffset();
+        int pieceSize = Piece.getPieceSize();
+        int buttonSize = pieceSize / 2;
 
         //Generate each line of buttons
-        buttons[0] = generateHorizontalButtons(BOARD_OFFSET, BOARD_OFFSET - BUTTON_SIZE, false);
-        buttons[1] = generateHorizontalButtons(BOARD_OFFSET, BOARD_OFFSET + (PIECE_SIZE * board.getHeight()), true);
-        buttons[2] = generateVerticalButtons(BOARD_OFFSET - BUTTON_SIZE, BOARD_OFFSET, false);
-        buttons[3] = generateVerticalButtons(BOARD_OFFSET + (PIECE_SIZE * board.getWidth()), BOARD_OFFSET, true);
+        buttons[0] = generateHorizontalButtons(offset, offset - buttonSize, false);
+        buttons[1] = generateHorizontalButtons(offset, offset + (pieceSize * board.getHeight()), true);
+        buttons[2] = generateVerticalButtons(offset - buttonSize, offset, false);
+        buttons[3] = generateVerticalButtons(offset + (pieceSize * board.getWidth()), offset, true);
 
+        GameButton.setGraphicsContext(gc);
+        
         return buttons;
     }
 
@@ -343,7 +259,7 @@ public class Orbital4 extends Application {
             buttons[i] = new GameButton(true, negative, i);
             //Place button.
             //Button sizing handled in button constructor
-            buttons[i].setLayoutY(xStart + (PIECE_SIZE * i));
+            buttons[i].setLayoutY(xStart + (Piece.getPieceSize() * i));
             buttons[i].setLayoutX(yStart);
         }
 
@@ -373,7 +289,7 @@ public class Orbital4 extends Application {
             //Place button.
             //Button sizing handled in button constructor
             buttons[i].setLayoutY(xStart);
-            buttons[i].setLayoutX(yStart + (PIECE_SIZE * i));
+            buttons[i].setLayoutX(yStart + (Piece.getPieceSize() * i));
         }
 
         return buttons;

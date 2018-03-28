@@ -1,5 +1,8 @@
 package Orbital4;
 
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+
 /**
  * Board class. Acts as model for view contained in Orbital4, and is manipulated
  * by input from GUI buttons and GameButtons in Orbital4.
@@ -12,6 +15,15 @@ package Orbital4;
  * @author Evan Mulrooney 000745477
  */
 public class Board {
+    
+    /* Offset from top-left of window */
+    private final static int BOARD_OFFSET = 60;
+    /* Size for pieces */
+    private final static int PIECE_SIZE = 48;
+
+    /* Colors for board tiles */
+    private final static Color BOARD_COLOR_1 = Color.LIGHTGRAY;
+    private final static Color BOARD_COLOR_2 = Color.DARKGRAY;
 
     /* Board completed or not */
     private boolean gameWon = false;
@@ -19,6 +31,10 @@ public class Board {
     /* Board size */
     private final int WIDTH = 9;
     private final int HEIGHT = 9;
+    
+    /* Player checks for 4-in-a-row */
+    // Blank for simple index, 4 in a row for players, X for neutral block
+    private final String[] PLAYER_CHECKS = new String[] {" ", "1111", "2222", "X"}; 
 
     /* Disallows players placing pieces straight onto edges of the board */
     //Initially meant for debugging/experimenting, makes for a different game-type
@@ -31,10 +47,7 @@ public class Board {
     /* Current player */
     //Initialized at 8 to generate a neutral piece before allowing any other
     //pieces to be dropped
-    private int currentPlayer = 8;
-
-    /* Static references to scores */
-    private static GameScore scores;
+    private int currentPlayer = 3;
 
     /**
      * Constructor. Creates a new board with constants WIDTH and HEIGHT, then
@@ -43,6 +56,38 @@ public class Board {
     public Board() {
         grid = new Piece[WIDTH][HEIGHT];
         setPiece(WIDTH / 2, HEIGHT / 2);
+    }
+    
+    /**
+     * Draws board and neutral centre piece.
+     * Loops through every space on grid and creates a grid of alternating
+     * colours. Draws the neutral piece found at the centre of the board.
+     * @param gc Graphics Context to draw on
+     */
+    public void draw(GraphicsContext gc) {
+
+        //Shortened for readability
+        int w = WIDTH;
+        int h = HEIGHT;
+        
+        //Loop through and draw each space
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+
+                if ((x + y) % 2 == 0) {
+                    gc.setFill(BOARD_COLOR_1);
+                } else {
+                    gc.setFill(BOARD_COLOR_2);
+                }
+
+                gc.fillRect(BOARD_OFFSET + (x * PIECE_SIZE), BOARD_OFFSET + (y * PIECE_SIZE), PIECE_SIZE, PIECE_SIZE);
+            }
+        }
+
+        //Make sure centre piece is drawn, otherwise players don't know where
+        //to drop pieces.
+        grid[w / 2][h / 2].draw(gc);
+
     }
 
     /**
@@ -65,22 +110,22 @@ public class Board {
             //player scoring with two lines. Unlikely, but fun to allow one 
             //player to totally stomp on the other.
             //Horizontal
-            if (checkStraightLine(true, y) != -1) {
+            if (checkStraightLine(true, y)) {
                 gameWon();
             };
 
             //Vertical
-            if (checkStraightLine(false, x) != -1) {
+            if (checkStraightLine(false, x)) {
                 gameWon();
             }
 
             //Diagonal descending from top left 
-            if (checkDiagonalDown(x, y) != -1) {
+            if (checkDiagonalDown(x, y)) {
                 gameWon();
             }
 
             //Diagonal ascending from bottom left
-            if (checkDiagonalUp(x, y) != -1) {
+            if (checkDiagonalUp(x, y)) {
                 gameWon();
             }
 
@@ -95,7 +140,7 @@ public class Board {
      */
     private void gameWon() {
         gameWon = true;
-        scores.pointScored(currentPlayer);
+        GameScore.pointScored(currentPlayer);
     }
 
     /**
@@ -108,22 +153,6 @@ public class Board {
         } else {
             currentPlayer = 1;
         }
-    }
-
-    /**
-     * Returns a string of the current player's number repeated four times. Used
-     * for finding 4-in-a-row on the board for a game win.
-     *
-     * @return player's number 4 times as a string
-     */
-    private String createPlayerCheck() {
-        String playerCheck = "";
-
-        for (int i = 0; i < 4; i++) {
-            playerCheck += currentPlayer;
-        }
-
-        return playerCheck;
     }
 
     /**
@@ -180,10 +209,7 @@ public class Board {
      * @return space free or not
      */
     private boolean checkSpaceFree(int x, int y) {
-        if (getPieceOwner(x, y) == 0) {
-            return true;
-        }
-        return false;
+        return (grid[x][y] == null);
     }
 
     /**
@@ -293,19 +319,19 @@ public class Board {
      * @param index Row/column to check
      * @return Start location of winning column/row found
      */
-    private int checkStraightLine(boolean horizontal, int index) {
+    private boolean checkStraightLine(boolean horizontal, int index) {
 
-        String lineContent = "";
+        String content = "";
 
         if (horizontal) {
 
             //Iterate from left to right
             for (int i = 0; i < WIDTH; i++) {
                 if (grid[i][index] != null) {
-                    lineContent += grid[i][index].getPieceOwner();
+                    content += grid[i][index].getPieceOwner();
                 } else {
                     //Making sure the indexOf can't jump across a gap
-                    lineContent += "*";
+                    content += "*";
                 }
             }
         } else {
@@ -313,14 +339,14 @@ public class Board {
             //Iterate from top to bottom
             for (int i = 0; i < HEIGHT; i++) {
                 if (grid[index][i] != null) {
-                    lineContent += grid[index][i].getPieceOwner();
+                    content += grid[index][i].getPieceOwner();
                 } else {
-                    lineContent += "*";
+                    content += "*";
                 }
             }
         }
 
-        return lineContent.indexOf(createPlayerCheck());
+        return content.contains(PLAYER_CHECKS[currentPlayer]);
     }
 
     /**
@@ -331,9 +357,9 @@ public class Board {
      * @param y vertical position to start
      * @return Start location of winning diagonal found
      */
-    private int checkDiagonalDown(int x, int y) {
+    private boolean checkDiagonalDown(int x, int y) {
 
-        String diagonalContent = "";
+        String content = "";
 
         //Move to far top left
         if (x > y) {
@@ -347,15 +373,15 @@ public class Board {
         //Iterate through diagonally downwards
         while ((x < WIDTH) && (y < HEIGHT)) {
             if (grid[x][y] != null) {
-                diagonalContent += grid[x][y].getPieceOwner();
+                content += grid[x][y].getPieceOwner();
             } else {
-                diagonalContent += "*";
+                content += "*";
             }
             x++;
             y++;
         }
 
-        return diagonalContent.indexOf(createPlayerCheck());
+        return content.contains(PLAYER_CHECKS[currentPlayer]);
     }
 
     /**
@@ -366,8 +392,8 @@ public class Board {
      * @param y vertical position to start
      * @return Start location of winning diagonal found
      */
-    private int checkDiagonalUp(int x, int y) {
-        String diagonalContent = "";
+    private boolean checkDiagonalUp(int x, int y) {
+        String content = "";
 
         //Start check as far down-left as possible
         while (x > 0 && y < HEIGHT - 1) {
@@ -378,15 +404,15 @@ public class Board {
         //Loop through every square from bottom left to top right
         while ((x < WIDTH) && (y >= 0)) {
             if (grid[x][y] != null) {
-                diagonalContent += grid[x][y].getPieceOwner();
+                content += grid[x][y].getPieceOwner();
             } else {
-                diagonalContent += "*";
+                content += "*";
             }
             x++;
             y--;
         }
 
-        return diagonalContent.indexOf(createPlayerCheck());
+        return content.contains(PLAYER_CHECKS[currentPlayer]);
     }
 
     /**
@@ -423,31 +449,20 @@ public class Board {
     }
 
     /**
-     * Returns the number of the player that placed piece at given x,y coordinate.
-     * 
-     * Also can return zero if no piece at that location.
-     *
-     * @param x horizontal location
-     * @param y vertical location
-     * @return int representing owner of piece.
-     */
-    public int getPieceOwner(int x, int y) {
-        //Check piece exists and return
-        if (grid[x][y] != null) {
-            return grid[x][y].getPieceOwner();
-        } else {
-            //no piece found
-            return 0;
-        }
-    }
-
-    /**
      * Getter for next player to place a piece.
      *
      * @return Number of current player
      */
     public int getCurrentPlayer() {
         return currentPlayer;
+    }
+    
+    /**
+     * Getter for board offset.
+     * @return board offset in pixels
+     */
+    public static int getBoardOffset() {
+        return BOARD_OFFSET;
     }
 
     /**
@@ -457,16 +472,6 @@ public class Board {
      */
     public boolean getGameWon() {
         return gameWon;
-    }
-
-    /**
-     * Sets the scores reference according to scores parameter
-     * passed.
-     *
-     * @param scores 
-     */
-    public void setScores(GameScore scores) {
-        this.scores = scores;
     }
 
 }
