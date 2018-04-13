@@ -1,11 +1,8 @@
 # Orbital4
 ## Connect-4 in four directions around a single point.
 
-<<<<<<< HEAD
 For a .jar you can run right away, [click this link](/NetBeansProjects/Orbital4/dist/Orbital4.jar).
 
-=======
->>>>>>> 3ae6aea3232431e2bf8f149bcfd90da55f126316
 Orbital4 is a variation on Connect4 wherein players can drop pieces in four directions onto a single point
 in the middle of the screen.
 
@@ -15,10 +12,7 @@ the specifications were:
 - uses at least 3 different JavaFX component types (label, button, textfield, etc)
 - the styling default GUI must be modified 
 
-<<<<<<< HEAD
-
 =======
->>>>>>> 3ae6aea3232431e2bf8f149bcfd90da55f126316
 ## HOW TO PLAY:
 
 Players take turns dropping pieces by clicking the buttons around the main game board.
@@ -39,7 +33,3 @@ If you get 4 in a row in multiple directions, you get multiple points (and the o
 - pieces smoothly sliding in from off screen
 
 Having submitted this for marks, this project is now low priority versus everything else I'm doing. 
-<<<<<<< HEAD
-
-=======
->>>>>>> 3ae6aea3232431e2bf8f149bcfd90da55f126316
