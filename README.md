@@ -1,7 +1,7 @@
 # Orbital4
 ## Connect-4 in four directions around a single point.
 
-For a .jar you can run right away, [click this link](/NetBeansProjects/Orbital4/dist/Orbital4.jar).
+For a .jar you can run right away, [click this link](https://github.com/dog-eared/Orbital4/blob/master/dist/Orbital4.jar).
 
 Orbital4 is a variation on Connect4 wherein players can drop pieces in four directions onto a single point
 in the middle of the screen.
@@ -10,7 +10,7 @@ Orbital4 was written in Java for COMP10062 (Programming in Java) at Mohawk Colle
 the specifications were:
 - the view can respond to button presses to call methods in the model, but otherwise not implement any other logic 
 - uses at least 3 different JavaFX component types (label, button, textfield, etc)
-- the styling default GUI must be modified 
+- the styling of the default GUI must be modified 
 
 =======
 ## HOW TO PLAY:
