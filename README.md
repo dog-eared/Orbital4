@@ -1,7 +1,9 @@
 # Orbital4
 ## Connect-4 in four directions around a single point.
 
-For a .jar you can run right away, [click this link](https://github.com/dog-eared/Orbital4/blob/master/dist/Orbital4.jar).
+For a .jar you can run right away, [click this link](https://github.com/dog-eared/Orbital4/raw/master/dist/Orbital4.jar).
+
+![Screenshot of Orbital4](https://raw.githubusercontent.com/dog-eared/Orbital4/master/src/style/Orbital4.png)
 
 Orbital4 is a variation on Connect4 wherein players can drop pieces in four directions onto a single point
 in the middle of the screen.
@@ -32,4 +34,4 @@ If you get 4 in a row in multiple directions, you get multiple points (and the o
 - neverending mode, where the game isn't over when someone gets 4 in a row
 - pieces smoothly sliding in from off screen
 
-Having submitted this for marks, this project is now low priority versus everything else I'm doing. 
+**This project is complete for the time being.**
